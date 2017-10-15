@@ -49,12 +49,3 @@ var animate = function () {
 
 animate();
 
-/* -- Image functions -- */
-function invert() {
-  graph.invert();
-}
-
-// TODO: undo
-function greyscale() {
-  graph.greyscale();
-}

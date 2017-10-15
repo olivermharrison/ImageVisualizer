@@ -42,27 +42,7 @@ function GraphImage(scene, inputContext, outputContext) {
     };
   }
 
-  this.invert = function() {
-    if (this.animLength > 0) {
-      console.log("still animating.");
-      return;
-    }
-    this.targets = [];
-    this.copies = [];
-    this.count = 0;
-    this.animLength =50;
-    for (var i=0; i<this.outputData.length; i++) {
-      if ((i-3)%4 == 0) { // alpha
-        this.targets.push(255);
-        this.copies.push(255);
-      } else {
-        this.targets.push((255 - this.outputData[i]));
-        this.copies.push(this.outputData[i]);
-      }
-    }
-  }
-
-  this.greyscale = function() {
+  this.applyOperation = function(operation) {
     if (this.animLength > 0) {
       console.log("still animating.");
       return;
@@ -71,17 +51,48 @@ function GraphImage(scene, inputContext, outputContext) {
     this.copies = [];
     this.count = 0;
     this.animLength = 50;
-    for (var i=0; i<this.outputData.length; i+=4) {
-      let avg = Math.floor((this.outputData[i] + this.outputData[i+1] + this.outputData[i+2])/3);
-      for (var j=0; j<3; j++) {
-        this.targets.push(avg);
-        this.copies.push(this.outputData[i+j]);
+
+    switch(operation) {
+      case 'greyscale':
+        for (var i=0; i<this.outputData.length; i+=4) {
+          let avg = Math.floor((this.outputData[i] + this.outputData[i+1] + this.outputData[i+2])/3);
+          for (var j=0; j<3; j++) {
+            this.targets.push(avg);
+            this.copies.push(this.outputData[i+j]);
+          }
+          this.targets.push(255);
+          this.copies.push(255);;
+        }
+        break;
+      case 'invert':
+        for (var i=0; i<this.outputData.length; i++) {
+          if ((i-3)%4 == 0) { // alpha
+            this.targets.push(255);
+            this.copies.push(255);
+          } else {
+            this.targets.push((255 - this.outputData[i]));
+            this.copies.push(this.outputData[i]);
+          }
+        }
+        break;
+      case 'threshold':
+      let threshold = 128;
+      for (var i=0; i<this.outputData.length; i++) {
+        if ((i-3)%4 == 0) { // alpha
+          this.targets.push(255);
+          this.copies.push(255);
+        } else {
+          let target = (this.outputData[i] > threshold) ? 255 : 0;
+          this.targets.push(target);
+          this.copies.push(this.outputData[i]);
+        }
       }
-      this.targets.push(255);
-      this.copies.push(255);;
+        break;
+      default:
+        console.log('Unrecognized operation.');
+        break;
     }
   }
-
 
   this.update = function() {
     if (this.animLength > 0) {
