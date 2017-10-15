@@ -19,24 +19,27 @@
           <div class="io">
             <div class="input">
               <h2>Input</h2>
-              <hr />
+
+              <canvas id="inputCanvas" width="250" height="250  "></canvas>
             </div>
             <div class="output">
               <h2>Output</h2>
-              <hr />
+              <canvas id="outputCanvas" width="250" height="250  "></canvas>
             </div>
           </div>
 
           <div class="operations">
             <button>K-Means</button>
-            <button>Invert</button>
-            <button>Greyscale</button>
+            <button onclick="invert()">Invert</button>
+            <button onclick="greyscale()">Greyscale</button>
           </div>
-          
+
         </div>
 
         <script src="js/three/three.js"></script>
         <script src="js/three/OrbitControls.js"></script>
+        <script src="js/GraphImage.js"></script>
+        <script src="js/img.js"></script>
         <script src="js/main.js"></script>
     </body>
 </html>
