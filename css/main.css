@@ -7,21 +7,22 @@
   user-select: none;
 }
 
+canvas {
+  margin-bottom: 1em;
+}
+
 a {
   color: #83cbff;
     display: block;
 }
-form {
-  text-align: left;
-padding-left: 2em;
-
+select {
+  display: block;
+  margin: auto;
 }
 .container {
 
   position: fixed;
   text-align: center;
-      border: 2em solid rgba(0, 0, 0, 0);
-  box-sizing: border-box;
   color: rgba(255, 255, 255, 0.8);
 
 }

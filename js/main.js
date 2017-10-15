@@ -1,7 +1,7 @@
 
 var scene = new THREE.Scene();
 var camera = new THREE.PerspectiveCamera( 75, window.innerWidth/window.innerHeight, 0.1, 1000 );
-camera.position.y = 100;
+camera.position.y = 200;
 
 
 
@@ -44,12 +44,10 @@ document.getElementById('quantizeSlider').oninput = function(e) {
   document.getElementById('quantizeButton').innerText = 'quantize:' + this.value;
 }
 
-var radios = document.forms["inputFile"].elements["file"];
-for(var i = 0, max = radios.length; i < max; i++) {
-    radios[i].onclick = function() {
-        graph.setInputFile(this.value);
-    }
-}
+document.getElementById('inputFiles').addEventListener('change', function(){
+  console.log(this.value);
+  graph.setInputFile(this.value);
+});
 
 var animate = function () {
   requestAnimationFrame( animate );
