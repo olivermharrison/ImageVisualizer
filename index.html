@@ -8,23 +8,25 @@
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
         <link href="https://fonts.googleapis.com/css?family=Montserrat" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet">
         <link rel="stylesheet" href="css/main.css">
     </head>
     <body>
 
         <div class="container">
-          <h1>Image Visualizer</h1>
-          <hr />
 
           <div class="io">
             <div class="input">
               <h2>Input</h2>
 
               <canvas id="inputCanvas" width="250" height="250  "></canvas>
+              <a href="#">Upload Image</a>
             </div>
             <div class="output">
               <h2>Output</h2>
               <canvas id="outputCanvas" width="250" height="250  "></canvas>
+
+              <a id="dl" download="Canvas.png" href="#" >Download image</a>
             </div>
           </div>
 
