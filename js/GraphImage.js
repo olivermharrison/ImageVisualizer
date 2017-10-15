@@ -18,6 +18,8 @@ function GraphImage(scene, inputContext, outputContext) {
   this.animLength = 0;
   this.count = 0;
 
+  this.threshold = 128;
+
   this.setInputFile = function(file) {
     let self = this;
     this.spheres.forEach(function(sphere){
@@ -86,13 +88,12 @@ function GraphImage(scene, inputContext, outputContext) {
         }
         break;
       case 'threshold':
-        let threshold = 127;
         this.updates.push([]);
         for (var i=0; i<this.outputData.length; i++) {
           if ((i-3)%4 == 0) { // alpha
             this.updates[this.updates.length -1].push(255);
           } else {
-            let target = (this.outputData[i] > threshold) ? 255 : 0;
+            let target = (this.outputData[i] > this.threshold) ? 255 : 0;
             this.updates[this.updates.length -1].push(target);
           }
         }
@@ -109,6 +110,10 @@ function GraphImage(scene, inputContext, outputContext) {
         console.log('Unrecognized operation.');
         break;
     }
+  }
+
+  this.setThreshold = function(threshold) {
+    this.threshold = threshold;
   }
 
   this.update = function() {
