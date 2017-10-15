@@ -9,17 +9,23 @@ function GraphImage(scene, inputContext, outputContext) {
 
   this.image = new Image();
 
-  this.divisor = 100;
+  this.divisor = 50;
   this.spheres = [];
 
-  this.copies = [];
-  this.targets = [];
+  this.updates = [];
+  this.undo = false;
 
   this.animLength = 0;
   this.count = 0;
 
   this.setInputFile = function(file) {
     let self = this;
+    this.spheres.forEach(function(sphere){
+      this.scene.remove(sphere);
+    });
+    this.spheres = [];
+    this.updates = [];
+
     this.image.src = file;
     this.image.onload = function() {
 
@@ -27,15 +33,14 @@ function GraphImage(scene, inputContext, outputContext) {
       let outputCanvas = document.getElementById('outputCanvas');
       outputCanvas.width = inputCanvas.width = self.image.width;
       outputCanvas.height = inputCanvas.height = self.image.height;
-      this.divisor = self.image.width;
+      //self.divisor = self.image.width/2;
 
       self.inputContext.drawImage(self.image, 0, 0);
       self.inputData = self.inputContext.getImageData(0, 0, self.image.width, self.image.height).data;
 
-
-
       self.outputData = self.inputData;
       self.outputContext.drawImage(self.image, 0, 0);
+      self.updates.push(self.outputData);
 
       for (var i=0; i<self.inputData.length; i+=self.divisor*4) {
         let geometry = new THREE.SphereGeometry( 2, 8, 8 );
@@ -60,41 +65,49 @@ function GraphImage(scene, inputContext, outputContext) {
     this.count = 0;
     this.animLength = 50;
 
+
+
     switch(operation) {
       case 'greyscale':
+        this.updates.push([]);
         for (var i=0; i<this.outputData.length; i+=4) {
           let avg = Math.floor((this.outputData[i] + this.outputData[i+1] + this.outputData[i+2])/3);
           for (var j=0; j<3; j++) {
-            this.targets.push(avg);
-            this.copies.push(this.outputData[i+j]);
+            this.updates[this.updates.length -1].push(avg);
           }
-          this.targets.push(255);
-          this.copies.push(255);;
+          this.updates[this.updates.length -1].push(255);
         }
         break;
       case 'invert':
+        this.updates.push([]);
         for (var i=0; i<this.outputData.length; i++) {
           if ((i-3)%4 == 0) { // alpha
-            this.targets.push(255);
-            this.copies.push(255);
+            this.updates[this.updates.length -1].push(255);
           } else {
-            this.targets.push((255 - this.outputData[i]));
-            this.copies.push(this.outputData[i]);
+            this.updates[this.updates.length -1].push((255 - this.updates[this.updates.length - 2][i]));
           }
+
         }
         break;
       case 'threshold':
-      let threshold = 128;
-      for (var i=0; i<this.outputData.length; i++) {
-        if ((i-3)%4 == 0) { // alpha
-          this.targets.push(255);
-          this.copies.push(255);
-        } else {
-          let target = (this.outputData[i] > threshold) ? 255 : 0;
-          this.targets.push(target);
-          this.copies.push(this.outputData[i]);
+        let threshold = 127;
+        this.updates.push([]);
+        for (var i=0; i<this.outputData.length; i++) {
+          if ((i-3)%4 == 0) { // alpha
+            this.updates[this.updates.length -1].push(255);
+          } else {
+            let target = (this.outputData[i] > threshold) ? 255 : 0;
+            this.updates[this.updates.length -1].push(target);
+          }
         }
-      }
+        break;
+      case 'undo':
+        if (this.updates.length > 1) {
+          this.undo = true;
+        } else {
+          console.log('no');
+          this.animLength = 0;
+        }
         break;
       default:
         console.log('Unrecognized operation.');
@@ -107,17 +120,33 @@ function GraphImage(scene, inputContext, outputContext) {
       this.count++;
       let output = this.outputContext.createImageData(this.image.width,this.image.height);
         for (var i=0; i<this.outputData.length; i++) {
-          this.outputData[i] = THREE.Math.lerp(this.copies[i], this.targets[i], this.count/this.animLength);
+
+          if (this.undo) {
+            this.outputData[i] = THREE.Math.lerp(this.updates[this.updates.length-1][i], this.updates[this.updates.length-2][i], this.count/this.animLength);
+          } else {
+            this.outputData[i] = THREE.Math.lerp(this.updates[this.updates.length-2][i], this.updates[this.updates.length-1][i], this.count/this.animLength);
+          }
+
           output.data[i] = this.outputData[i];
 
           if (i%(4*this.divisor) === 0) {
             let sphere = this.spheres[i/(4*this.divisor)];
-            let pos = (new THREE.Vector3(this.copies[i]-128, this.copies[i+1]-128, this.copies[i+2]-128)).lerp(new THREE.Vector3(this.targets[i]-128, this.targets[i+1]-128, this.targets[i+2]-128), this.count/this.animLength);
+            let from, to = null;
+            if (this.undo) {
+              from = new THREE.Vector3(this.updates[this.updates.length-1][i]-128, this.updates[this.updates.length-1][i+1]-128, this.updates[this.updates.length-1][i+2]-128);
+              to = new THREE.Vector3(this.updates[this.updates.length-2][i]-128, this.updates[this.updates.length-2][i+1]-128, this.updates[this.updates.length-2][i+2]-128);
+            } else {
+              from = new THREE.Vector3(this.updates[this.updates.length-2][i]-128, this.updates[this.updates.length-2][i+1]-128, this.updates[this.updates.length-2][i+2]-128);
+              to = new THREE.Vector3(this.updates[this.updates.length-1][i]-128, this.updates[this.updates.length-1][i+1]-128, this.updates[this.updates.length-1][i+2]-128);
+            }
+
+            let pos = (from).lerp(to, this.count/this.animLength);
             sphere.position.x = pos.x;
             sphere.position.y = pos.y;
             sphere.position.z = pos.z;
             sphere.material.color = new THREE.Color((sphere.position.x + 128)/255, (sphere.position.y + 128)/255, (sphere.position.z + 128)/255);
           }
+
         }
 
         this.outputContext.putImageData( output , 0, 0 );
@@ -125,6 +154,11 @@ function GraphImage(scene, inputContext, outputContext) {
         if (this.count >= this.animLength) {
           this.animLength = 0;
           this.count = 0;
+          if (this.undo) {
+            this.undo = false;
+            this.updates.pop();
+          }
+          console.log('done');
         }
     }
   }
