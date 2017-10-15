@@ -40,7 +40,7 @@ function GraphImage(scene, inputContext, outputContext) {
 
       self.outputData = self.inputData;
       self.outputContext.drawImage(self.image, 0, 0);
-      self.updates.push(self.outputData);
+      self.updates.push(self.outputData.slice());
 
       for (var i=0; i<self.inputData.length; i+=self.divisor*4) {
         let geometry = new THREE.SphereGeometry( 2, 8, 8 );
@@ -60,12 +60,8 @@ function GraphImage(scene, inputContext, outputContext) {
       console.log("still animating.");
       return;
     }
-    this.targets = [];
-    this.copies = [];
     this.count = 0;
     this.animLength = 50;
-
-
 
     switch(operation) {
       case 'greyscale':
@@ -126,11 +122,11 @@ function GraphImage(scene, inputContext, outputContext) {
           } else {
             this.outputData[i] = THREE.Math.lerp(this.updates[this.updates.length-2][i], this.updates[this.updates.length-1][i], this.count/this.animLength);
           }
-
           output.data[i] = this.outputData[i];
 
           if (i%(4*this.divisor) === 0) {
             let sphere = this.spheres[i/(4*this.divisor)];
+
             let from, to = null;
             if (this.undo) {
               from = new THREE.Vector3(this.updates[this.updates.length-1][i]-128, this.updates[this.updates.length-1][i+1]-128, this.updates[this.updates.length-1][i+2]-128);
@@ -146,7 +142,6 @@ function GraphImage(scene, inputContext, outputContext) {
             sphere.position.z = pos.z;
             sphere.material.color = new THREE.Color((sphere.position.x + 128)/255, (sphere.position.y + 128)/255, (sphere.position.z + 128)/255);
           }
-
         }
 
         this.outputContext.putImageData( output , 0, 0 );
