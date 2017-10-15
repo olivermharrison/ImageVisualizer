@@ -23,8 +23,16 @@ function GraphImage(scene, inputContext, outputContext) {
     this.image.src = file;
     this.image.onload = function() {
 
+      let inputCanvas = document.getElementById('inputCanvas');
+      let outputCanvas = document.getElementById('outputCanvas');
+      outputCanvas.width = inputCanvas.width = self.image.width;
+      outputCanvas.height = inputCanvas.height = self.image.height;
+      this.divisor = self.image.width;
+
       self.inputContext.drawImage(self.image, 0, 0);
       self.inputData = self.inputContext.getImageData(0, 0, self.image.width, self.image.height).data;
+
+
 
       self.outputData = self.inputData;
       self.outputContext.drawImage(self.image, 0, 0);
@@ -97,7 +105,7 @@ function GraphImage(scene, inputContext, outputContext) {
   this.update = function() {
     if (this.animLength > 0) {
       this.count++;
-      let output = this.outputContext.createImageData(223,226);
+      let output = this.outputContext.createImageData(this.image.width,this.image.height);
         for (var i=0; i<this.outputData.length; i++) {
           this.outputData[i] = THREE.Math.lerp(this.copies[i], this.targets[i], this.count/this.animLength);
           output.data[i] = this.outputData[i];
