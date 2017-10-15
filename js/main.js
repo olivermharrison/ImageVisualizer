@@ -32,7 +32,14 @@ var inputContext = inputCanvas.getContext('2d');
 
 
 let graph = new GraphImage(scene, inputContext,outputContext);
-graph.setInputFile('t6.jpeg');
+graph.setInputFile('Lenna.png');
+
+var radios = document.forms["inputFile"].elements["file"];
+for(var i = 0, max = radios.length; i < max; i++) {
+    radios[i].onclick = function() {
+        graph.setInputFile(this.value);
+    }
+}
 
 var animate = function () {
   requestAnimationFrame( animate );

@@ -10,7 +10,11 @@ a {
   color: #83cbff;
     display: block;
 }
+form {
+  text-align: left;
+padding-left: 2em;
 
+}
 .container {
   width: 100vw;
   height: 100vh;
@@ -67,7 +71,8 @@ left: 0;
   margin: 0em 1em;
   cursor: pointer;
   transition: all 100ms;
-  background: linear-gradient(rgba(0, 133, 255, 0.55), rgba(84, 84, 222, 0.42));
+  background: transparent;
+border: 2px solid rgba(0, 182, 255, 0.71);
   box-shadow: 0px 0px 20px 1px rgba(0, 0, 0, 0.5);
 }
 .operations > button:hover {

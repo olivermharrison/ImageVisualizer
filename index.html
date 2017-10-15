@@ -17,13 +17,24 @@
 
           <div class="io">
             <div class="input">
-              <h2>Input</h2>
+              <h2>Input</h2><br />
 
               <canvas id="inputCanvas" width="250" height="250  "></canvas>
-              <a href="#">Upload Image</a>
+              <form action="" name="inputFile">
+                <input type="radio" name="file" value="lenna.png" checked> lenna<br>
+                <input type="radio" name="file" value="bowie.jpg"> bowie<br>
+                <input type="radio" name="file" value="lisa.jpg"> Monsa Lisa<br>
+                <input type="radio" name="file" value="starry.jpg"> Starry Night<br>
+                <input type="radio" name="file" value="color.jpg"> color<br>
+                <input type="radio" name="file" value="scream.jpg"> scream<br>
+                <input type="radio" name="file" value="musicians.jpg"> three musicians<br>
+                <input type="radio" name="file" value="terrace.jpg"> cafe terrace<br>
+              </form>
+
+
             </div>
             <div class="output">
-              <h2>Output</h2>
+              <h2>Output</h2><br />
               <canvas id="outputCanvas" width="250" height="250  "></canvas>
 
               <a id="dl" download="Canvas.png" href="#" >Download image</a>
@@ -31,10 +42,13 @@
           </div>
 
           <div class="operations">
-            <button>K-Means</button>
+
             <button onclick="graph.applyOperation('invert')">Invert</button>
             <button onclick="graph.applyOperation('greyscale')">Greyscale</button>
+            <button onclick="graph.applyOperation('undo')">undo</button>
             <button onclick="graph.applyOperation('threshold')">threshold</button>
+            <button>K-Means</button>
+
           </div>
 
         </div>
