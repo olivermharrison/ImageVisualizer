@@ -9,8 +9,10 @@ function GraphImage(scene, inputContext, outputContext) {
 
   this.image = new Image();
 
-  this.divisor = 50;
-  this.spheres = [];
+  this.divisor = 10;
+
+
+  this.particles = null;
 
   this.updates = [];
   this.undo = false;
@@ -22,10 +24,6 @@ function GraphImage(scene, inputContext, outputContext) {
 
   this.setInputFile = function(file) {
     let self = this;
-    this.spheres.forEach(function(sphere){
-      this.scene.remove(sphere);
-    });
-    this.spheres = [];
     this.updates = [];
 
     this.image.src = file;
@@ -44,16 +42,30 @@ function GraphImage(scene, inputContext, outputContext) {
       self.outputContext.drawImage(self.image, 0, 0);
       self.updates.push(self.outputData.slice());
 
-      for (var i=0; i<self.inputData.length; i+=self.divisor*4) {
-        let geometry = new THREE.SphereGeometry( 2, 8, 8 );
-        let material = new THREE.MeshBasicMaterial( { color: new THREE.Color(self.inputData[i]/255,self.inputData[i+1]/255, self.inputData[i+2]/255 )});
-        let sphere = new THREE.Mesh( geometry, material );
-        sphere.translateX(self.inputData[i]-128);
-        sphere.translateY(self.inputData[i+1]-128);
-        sphere.translateZ(self.inputData[i+2]-128);
-        self.scene.add( sphere );
-        self.spheres.push(sphere);
+
+      if (self.particles) {
+        self.scene.remove(self.particles);
       }
+
+      let geometry = new THREE.Geometry();
+      let sprite = new THREE.TextureLoader().load( "disc.png" );
+      let material = new THREE.PointsMaterial( { size: 5,vertexColors: THREE.VertexColors, sizeAttenuation: true, map: sprite, alphaTest: 0.5, transparent: false } );
+      let colors = [];
+      for (var i=0; i<self.inputData.length; i+=self.divisor*4) {
+        var vertex = new THREE.Vector3();
+        vertex.x = self.inputData[i]-128;
+        vertex.y = self.inputData[i+1]-128;
+        vertex.z = self.inputData[i+2]-128;
+        geometry.vertices.push( vertex );
+
+        let color = new THREE.Color(self.inputData[i]/255,self.inputData[i+1]/255, self.inputData[i+2]/255 );
+        colors.push(color);
+      }
+      geometry.colors = colors;
+
+
+      self.particles = new THREE.Points( geometry, material );
+      scene.add( self.particles );
     };
   }
 
@@ -117,11 +129,14 @@ function GraphImage(scene, inputContext, outputContext) {
   }
 
   this.update = function() {
+    let self = this;
     if (this.animLength > 0) {
       this.count++;
+
       let output = this.outputContext.createImageData(this.image.width,this.image.height);
         for (var i=0; i<this.outputData.length; i++) {
 
+          // IMAGE OPS
           if (this.undo) {
             this.outputData[i] = THREE.Math.lerp(this.updates[this.updates.length-1][i], this.updates[this.updates.length-2][i], this.count/this.animLength);
           } else {
@@ -129,9 +144,8 @@ function GraphImage(scene, inputContext, outputContext) {
           }
           output.data[i] = this.outputData[i];
 
+          // THREEJS ops
           if (i%(4*this.divisor) === 0) {
-            let sphere = this.spheres[i/(4*this.divisor)];
-
             let from, to = null;
             if (this.undo) {
               from = new THREE.Vector3(this.updates[this.updates.length-1][i]-128, this.updates[this.updates.length-1][i+1]-128, this.updates[this.updates.length-1][i+2]-128);
@@ -142,12 +156,13 @@ function GraphImage(scene, inputContext, outputContext) {
             }
 
             let pos = (from).lerp(to, this.count/this.animLength);
-            sphere.position.x = pos.x;
-            sphere.position.y = pos.y;
-            sphere.position.z = pos.z;
-            sphere.material.color = new THREE.Color((sphere.position.x + 128)/255, (sphere.position.y + 128)/255, (sphere.position.z + 128)/255);
+            
+            self.particles.geometry.vertices[i/(4*this.divisor)] = pos;
+            self.particles.geometry.colors[i/(4*this.divisor)] = new THREE.Color((pos.x + 128)/255, (pos.y + 128)/255, (pos.z + 128)/255);;
           }
         }
+        self.particles.geometry.verticesNeedUpdate = true;
+        self.particles.geometry.colorsNeedUpdate = true;
 
         this.outputContext.putImageData( output , 0, 0 );
 
