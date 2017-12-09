@@ -63,6 +63,20 @@ var animate = function () {
 
 animate();
 
+function uploadImage(){
+  var file    = document.querySelector('input[type=file]').files[0];
+  var reader  = new FileReader();
+
+  if (file) {
+    reader.readAsDataURL(file); 
+  }
+
+  reader.onloadend = function () {
+    console.log(reader);  
+    graph.setInputFile(reader.result);
+  } 
+}
+
 function dlCanvas() {
   var dt = outputCanvas.toDataURL('image/png');
   dt = dt.replace(/^data:image\/[^;]*/, 'data:application/octet-stream');
