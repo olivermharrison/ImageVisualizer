@@ -55,7 +55,11 @@ function GraphImage(scene, inputContext, outputContext) {
       }
 
       let geometry = new THREE.Geometry();
-      let sprite = new THREE.TextureLoader().load( "disc.png" );
+      let sprite = new THREE.TextureLoader().load( "circle.png" );
+      sprite.anisotropy = 0;
+      sprite.magFilter = THREE.NearestFilter;
+      sprite.minFilter = THREE.NearestFilter;
+      
       let material = new THREE.PointsMaterial( { size: 5,vertexColors: THREE.VertexColors, sizeAttenuation: true, map: sprite, alphaTest: 0.5, transparent: false } );
       let colors = [];
       for (var i=0; i<self.inputData.length; i+=self.divisor*4) {
