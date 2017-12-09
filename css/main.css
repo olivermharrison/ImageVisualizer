@@ -5,6 +5,19 @@
   padding: 0;
   text-transform: lowercase;
   user-select: none;
+  outline: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+@media only screen and (max-width: 600px) {
+  body {
+    font-size: 10px;
+  }  
+}
+@media only screen and (max-width: 400px) {
+  body {
+    font-size: 6px;
+  }  
 }
 
 canvas {
