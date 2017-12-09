@@ -25,12 +25,19 @@ function GraphImage(scene, inputContext, outputContext) {
   this.setInputFile = function(file) {
     let self = this;
     this.updates = [];
-
     this.image.src = file;
-    this.image.onload = function() {
 
+    let resize = true;
+
+    this.image.onload = function() {
+      if (resize) {
+        self.image.src = resizeImage(self.image);
+        resize = false;
+        return;
+      }
+      
       let inputCanvas = document.getElementById('inputCanvas');
-      let outputCanvas = document.getElementById('outputCanvas');
+      let outputCanvas = document.getElementById('outputCanvas');      
       outputCanvas.width = inputCanvas.width = self.image.width;
       outputCanvas.height = inputCanvas.height = self.image.height;
       //self.divisor = self.image.width/2;
@@ -177,4 +184,33 @@ function GraphImage(scene, inputContext, outputContext) {
         }
     }
   }
+}
+
+// TODO cross browser
+let maxWidth = window.innerWidth*0.3;
+let maxHeight = window.innerHeight*0.3;
+
+function resizeImage(image) {
+  let originalWidth = image.width;
+  let originalHeight = image.height;
+
+  let widthFactor = originalWidth/maxWidth;
+  let heightFactor = originalHeight/maxHeight;
+
+  let scaleFactor = (widthFactor > heightFactor) ? widthFactor : heightFactor;
+
+  let newWidth = Math.floor(originalWidth/scaleFactor);
+  let newHeight = Math.floor(originalHeight/scaleFactor);
+
+  console.log("Resizing image from " + originalWidth + "x" + originalHeight + " to " + newWidth + "x" + newHeight);
+
+  // create an off-screen canvas
+  var canvas = document.createElement('canvas'),
+  ctx = canvas.getContext('2d');
+  canvas.width = newWidth;
+  canvas.height = newHeight;
+  ctx.drawImage(image, 0, 0, newWidth, newHeight);
+
+  // encode image to data-uri with base64 version of compressed image
+  return canvas.toDataURL();
 }
