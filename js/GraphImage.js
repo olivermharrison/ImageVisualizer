@@ -241,7 +241,27 @@ function GraphImage(scene, inputContext, outputContext) {
       centroids.push(new THREE.Vector3(Math.random()*255, Math.random()*255, Math.random()*255));
     }
 
-    let loop = setInterval(kmeansIteration, 10);
+    // centroid spheres:
+    let spheres = [];
+    centroids.forEach(function(centroid){
+      let geometry = new THREE.Geometry();
+      let sprite = new THREE.TextureLoader().load( "circle.png" );
+      sprite.anisotropy = 0;
+      sprite.magFilter = THREE.NearestFilter;
+      sprite.minFilter = THREE.NearestFilter;
+      let material = new THREE.PointsMaterial( { size: 40,vertexColors: THREE.VertexColors, sizeAttenuation: true, map: sprite,transparent: true, opacity:0 } );
+      var vertex = new THREE.Vector3(centroid.x-128, centroid.y-128, centroid.z-128);
+      geometry.vertices.push( vertex );
+      geometry.colors = [new THREE.Color(centroid.x/255, centroid.y/255, centroid.z/255)];
+
+      let sphere = new THREE.Points( geometry, material );
+      self.scene.add( sphere );
+      spheres.push(sphere);
+    });
+
+    console.log(spheres);
+
+    let loop = setInterval(kmeansIteration, 33);
 
     function kmeansIteration() {
       updateDiv.innerHTML = 'Running K Means with k=' + self.numCentroids + "<br> Iteration " + iteration;
@@ -288,6 +308,15 @@ function GraphImage(scene, inputContext, outputContext) {
         }
       }
 
+      // update centroid sphere
+      for (let i=0; i<centroids.length; ++i) {
+        spheres[i].geometry.vertices[0] = new THREE.Vector3(centroids[i].x-128, centroids[i].y-128, centroids[i].z-128);
+        spheres[i].geometry.verticesNeedUpdate = true;
+        spheres[i].geometry.colorsNeedUpdate = true;
+        spheres[i].geometry.colors[0] = new THREE.Color(centroids[i].x/255, centroids[i].y/255, centroids[i].z/255 );
+        spheres[i].material.opacity = 1;
+      }
+
       iteration++;
 
       if (converged) {
@@ -297,6 +326,10 @@ function GraphImage(scene, inputContext, outputContext) {
         setTimeout(function(){
           updateDiv.innerText = "";
         }, 3000);
+
+        spheres.forEach(function(sphere){
+          self.scene.remove(sphere);
+        });
     
         // setup the animation
         self.count = 0;
