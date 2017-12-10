@@ -22,7 +22,7 @@ function GraphImage(scene, inputContext, outputContext) {
   this.count = 0;
 
   // oepration vars
-  this.brightness = 1;
+  this.brightness = 1.5;
   this.numCentroids = 10;  // k means operation
   this.threshold = 128;   // threshold opertation
 
@@ -156,11 +156,7 @@ function GraphImage(scene, inputContext, outputContext) {
         break;
       case 'kmeans':
         this.animLength = 0;
-        let updateDiv = document.getElementById('opUpdates');
-        updateDiv.innerText = "Running K Means with k=" + this.numCentroids + "...";
-        setTimeout(function(){
-          self.runKMeans();
-        }, 100);
+        this.runKMeans();
         break;
       default:
         console.log('Unrecognized operation.');
@@ -185,46 +181,49 @@ function GraphImage(scene, inputContext, outputContext) {
       this.count++;
 
       let output = this.outputContext.createImageData(this.image.width,this.image.height);
-        for (var i=0; i<this.outputData.length; i++) {
+      for (var i=0; i<this.outputData.length; i++) {
 
-          // IMAGE OPS
+        // IMAGE OPS
+        if (this.undo) {
+          this.outputData[i] = THREE.Math.lerp(this.updates[this.updates.length-1][i], this.updates[this.updates.length-2][i], this.count/this.animLength);
+        } else {
+          this.outputData[i] = THREE.Math.lerp(this.updates[this.updates.length-2][i], this.updates[this.updates.length-1][i], this.count/this.animLength);
+        }
+        output.data[i] = this.outputData[i];
+
+        // THREEJS ops
+        if (i%(4*this.divisor) === 0) {
+          let from, to = null;
           if (this.undo) {
-            this.outputData[i] = THREE.Math.lerp(this.updates[this.updates.length-1][i], this.updates[this.updates.length-2][i], this.count/this.animLength);
+            from = new THREE.Vector3(this.updates[this.updates.length-1][i]-128, this.updates[this.updates.length-1][i+1]-128, this.updates[this.updates.length-1][i+2]-128);
+            to = new THREE.Vector3(this.updates[this.updates.length-2][i]-128, this.updates[this.updates.length-2][i+1]-128, this.updates[this.updates.length-2][i+2]-128);
           } else {
-            this.outputData[i] = THREE.Math.lerp(this.updates[this.updates.length-2][i], this.updates[this.updates.length-1][i], this.count/this.animLength);
+            from = new THREE.Vector3(this.updates[this.updates.length-2][i]-128, this.updates[this.updates.length-2][i+1]-128, this.updates[this.updates.length-2][i+2]-128);
+            to = new THREE.Vector3(this.updates[this.updates.length-1][i]-128, this.updates[this.updates.length-1][i+1]-128, this.updates[this.updates.length-1][i+2]-128);
           }
-          output.data[i] = this.outputData[i];
 
-          // THREEJS ops
-          if (i%(4*this.divisor) === 0) {
-            let from, to = null;
-            if (this.undo) {
-              from = new THREE.Vector3(this.updates[this.updates.length-1][i]-128, this.updates[this.updates.length-1][i+1]-128, this.updates[this.updates.length-1][i+2]-128);
-              to = new THREE.Vector3(this.updates[this.updates.length-2][i]-128, this.updates[this.updates.length-2][i+1]-128, this.updates[this.updates.length-2][i+2]-128);
-            } else {
-              from = new THREE.Vector3(this.updates[this.updates.length-2][i]-128, this.updates[this.updates.length-2][i+1]-128, this.updates[this.updates.length-2][i+2]-128);
-              to = new THREE.Vector3(this.updates[this.updates.length-1][i]-128, this.updates[this.updates.length-1][i+1]-128, this.updates[this.updates.length-1][i+2]-128);
-            }
-
-            let pos = (from).lerp(to, this.count/this.animLength);
-            
-            self.particles.geometry.vertices[i/(4*this.divisor)] = pos;
-            self.particles.geometry.colors[i/(4*this.divisor)] = new THREE.Color((pos.x + 128)/255, (pos.y + 128)/255, (pos.z + 128)/255);;
-          }
+          let pos = (from).lerp(to, this.count/this.animLength);
+          
+          self.particles.geometry.vertices[i/(4*this.divisor)] = pos;
+          self.particles.geometry.colors[i/(4*this.divisor)] = new THREE.Color((pos.x + 128)/255, (pos.y + 128)/255, (pos.z + 128)/255);;
         }
-        self.particles.geometry.verticesNeedUpdate = true;
-        self.particles.geometry.colorsNeedUpdate = true;
+      }
+      // TODO lerp size of points
+      //self.particles.material.size = 20;
 
-        this.outputContext.putImageData( output , 0, 0 );
+      self.particles.geometry.verticesNeedUpdate = true;
+      self.particles.geometry.colorsNeedUpdate = true;
 
-        if (this.count >= this.animLength) {
-          this.animLength = 0;
-          this.count = 0;
-          if (this.undo) {
-            this.undo = false;
-            this.updates.pop();
-          }
+      this.outputContext.putImageData( output , 0, 0 );
+
+      if (this.count >= this.animLength) {
+        this.animLength = 0;
+        this.count = 0;
+        if (this.undo) {
+          this.undo = false;
+          this.updates.pop();
         }
+      }
     }
   }
 
@@ -234,17 +233,21 @@ function GraphImage(scene, inputContext, outputContext) {
     let converged = false;
     let iteration = 1;
     let pixelCentroids = []; // stores the index of the centroid that each pixel is assigned to
+    let updateDiv = document.getElementById('opUpdates');
 
     // 1) initialize k centroids randomly 
     let centroids = [];
     for (let i=0; i<this.numCentroids; ++i) {
       centroids.push(new THREE.Vector3(Math.random()*255, Math.random()*255, Math.random()*255));
     }
-    
-    console.log('Running K Means with k=' + this.numCentroids);
-    while (!converged) {
+
+    let loop = setInterval(kmeansIteration, 10);
+
+    function kmeansIteration() {
+      updateDiv.innerHTML = 'Running K Means with k=' + self.numCentroids + "<br> Iteration " + iteration;
+
       // 1) assign pixels to their nearest centroids
-      for (let i=0; i<this.outputData.length; i+=4) { // for each pixel
+      for (let i=0; i<self.outputData.length; i+=4) { // for each pixel
         let minDistance = 1000000;
         let c = 0;
         pixelCentroids[i/4] = 0;
@@ -261,13 +264,13 @@ function GraphImage(scene, inputContext, outputContext) {
       // 2) Recalculate centroids
       let centroidsCopy = [];
       // reset centroids
-      for (let k=0; k<this.numCentroids; ++k) {
+      for (let k=0; k<self.numCentroids; ++k) {
         centroidsCopy.push({value: centroids[k], count: 0});
         centroids[k] = new THREE.Vector3(0, 0, 0);
       }
       
       // sum pixels nearest to centroid
-      for (let i=0; i<this.outputData.length; i+=4) { // for each pixel
+      for (let i=0; i<self.outputData.length; i+=4) { // for each pixel
         centroids[pixelCentroids[i/4]].x += self.outputData[i];
         centroids[pixelCentroids[i/4]].y += self.outputData[i+1];
         centroids[pixelCentroids[i/4]].z += self.outputData[i+2];
@@ -276,7 +279,7 @@ function GraphImage(scene, inputContext, outputContext) {
 
       // find average
       converged = true;
-      for (let k=0; k<this.numCentroids; ++k) {
+      for (let k=0; k<self.numCentroids; ++k) {
         if (centroidsCopy[k].count > 0) {
           centroids[k].divideScalar(centroidsCopy[k].count);
         }
@@ -286,24 +289,26 @@ function GraphImage(scene, inputContext, outputContext) {
       }
 
       iteration++;
-    }
 
-    console.log("K Means has converged after " + iteration + " iterations.");
-    let updateDiv = document.getElementById('opUpdates');
-    updateDiv.innerText = "K Means has converged after " + iteration + " iterations.";
-    setTimeout(function(){
-      updateDiv.innerText = "";
-    }, 3000);
-
-    // setup the animation
-    this.count = 0;
-    this.animLength = 50;
-    this.updates.push([]);
-    for (var i=0; i<this.outputData.length; i+=4) {
-      this.updates[this.updates.length -1].push(centroids[pixelCentroids[i/4]].x);
-      this.updates[this.updates.length -1].push(centroids[pixelCentroids[i/4]].y);
-      this.updates[this.updates.length -1].push(centroids[pixelCentroids[i/4]].z);
-      this.updates[this.updates.length -1].push(255);
+      if (converged) {
+        clearInterval(loop);
+        
+        updateDiv.innerText = "K Means has converged after " + iteration + " iterations.";
+        setTimeout(function(){
+          updateDiv.innerText = "";
+        }, 3000);
+    
+        // setup the animation
+        self.count = 0;
+        self.animLength = 50;
+        self.updates.push([]);
+        for (var i=0; i<self.outputData.length; i+=4) {
+          self.updates[self.updates.length -1].push(centroids[pixelCentroids[i/4]].x);
+          self.updates[self.updates.length -1].push(centroids[pixelCentroids[i/4]].y);
+          self.updates[self.updates.length -1].push(centroids[pixelCentroids[i/4]].z);
+          self.updates[self.updates.length -1].push(255);
+        }
+      }
     }
   }
 }
