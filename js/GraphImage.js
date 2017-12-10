@@ -314,8 +314,9 @@ function GraphImage(scene, inputContext, outputContext) {
 }
 
 // TODO cross browser
-let maxWidth = window.innerWidth*0.3;
-let maxHeight = window.innerHeight*0.3;
+let maxSize = 256;
+let maxWidth = (window.innerWidth*0.3 <= maxSize) ? window.innerWidth*0.3 : maxSize;
+let maxHeight = (window.innerHeight*0.3 <= maxSize) ? window.innerHeight*0.3 : maxSize;
 
 function resizeImage(image) {
   let originalWidth = image.width;
