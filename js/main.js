@@ -53,8 +53,14 @@ document.getElementById('inputFiles').addEventListener('change', function(){
   graph.setInputFile(this.value);
 });
 
+var stats = new Stats();
+stats.showPanel( 0 ); // 0: fps, 1: ms, 2: mb, 3+: custom
+document.body.appendChild( stats.dom );
+
 var animate = function () {
   requestAnimationFrame( animate );
+
+  stats.begin();
   theta += 0.2;
   camera.position.x = radius * Math.sin( THREE.Math.degToRad( theta ) );
   //camera.position.y = radius * Math.sin( THREE.Math.degToRad( theta ) );
@@ -63,6 +69,7 @@ var animate = function () {
   graph.update();
 
   renderer.render(scene, camera);
+  stats.end();
 };
 
 animate();
