@@ -24,7 +24,7 @@
             </label>
             <br>   
             <select id="inputFiles">  
-              <option disabled value> -- select an image -- </option>
+              <option disabled value> -- select -- </option>
               <option value="lenna.png">lena</option>
               <option value="bowie.jpg">bowie</option>
               <option value="lisa.jpg">lisa</option>
@@ -44,32 +44,39 @@
           </div>
 
           <div class="operations">
-            <div id="opUpdates"></div>
+            <div id="opUpdates" class="opUpdates"></div>
 
-            <div>
-              <input type="range" min="1" max="20" id="quantizeSlider">
-              <button onclick="graph.applyOperation('kmeans')" id="quantizeButton">Quantize:10</button>
+            <div class="row">
+              <div>
+                <input type="range" min="1" max="20" id="quantizeSlider">
+                <button onclick="graph.applyOperation('kmeans')" id="quantizeButton">Quantize:10</button>
+              </div>
+              
+              <div>
+                <input type="range" min="0" max="255" id="thresholdSlider">
+                <button onclick="graph.applyOperation('threshold')" id="thresholdButton">threshold:128</button>
+              </div>
+              <div>
+                <input type="range" min="0.5" max="2" step="0.1" id="brightnessSlider">
+                <button onclick="graph.applyOperation('brightness')" id="brightnessButton">brightness:150%</button>
+              </div>
             </div>
-            <div>
-              <button onclick="graph.applyOperation('invert')">Invert</button>
+
+            <div class="row">
+              <div>
+                <button onclick="graph.applyOperation('invert')">Invert</button>
+              </div>
+              <div>
+                <button onclick="graph.applyOperation('undo')">undo</button>
+              </div>
+              <div>
+                <button onclick="graph.applyOperation('reset')">reset</button>
+              </div>
+              <div>
+                <button onclick="graph.applyOperation('greyscale')">Greyscale</button>
+              </div>
             </div>
-            <div>
-              <button onclick="graph.applyOperation('undo')">undo</button>
-            </div>
-            <div>
-              <button onclick="graph.applyOperation('reset')">reset</button>
-            </div>
-            <div>
-              <button onclick="graph.applyOperation('greyscale')">Greyscale</button>
-            </div>
-            <div>
-              <input type="range" min="0" max="255" id="thresholdSlider">
-              <button onclick="graph.applyOperation('threshold')" id="thresholdButton">threshold:128</button>
-            </div>
-            <div>
-              <input type="range" min="0.5" max="2" step="0.1" id="brightnessSlider">
-              <button onclick="graph.applyOperation('brightness')" id="brightnessButton">brightness:100%</button>
-            </div>
+            
           </div>
 
         </div>
