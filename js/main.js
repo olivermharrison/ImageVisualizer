@@ -35,7 +35,10 @@ var inputContext = inputCanvas.getContext('2d');
 let graph = new GraphImage(scene, inputContext,outputContext);
 graph.setInputFile('Lenna.png');
 
-
+document.getElementById('brightnessSlider').oninput = function(e) {
+  document.getElementById('brightnessButton').innerText = 'brightness:' + parseFloat(this.value).toFixed(1);
+  graph.setBrightness(this.value);
+}
 document.getElementById('thresholdSlider').oninput = function(e) {
   document.getElementById('thresholdButton').innerText = 'threshold:' + this.value;
   graph.setThreshold(this.value);

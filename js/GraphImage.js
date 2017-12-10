@@ -22,6 +22,7 @@ function GraphImage(scene, inputContext, outputContext) {
   this.count = 0;
 
   // oepration vars
+  this.brightness = 1;
   this.numCentroids = 10;  // k means operation
   this.threshold = 128;   // threshold opertation
 
@@ -125,6 +126,17 @@ function GraphImage(scene, inputContext, outputContext) {
           }
         }
         break;
+      case 'brightness':
+        this.updates.push([]);
+        for (var i=0; i<this.outputData.length; i++) {
+          if ((i-3)%4 == 0) { // alpha
+            this.updates[this.updates.length -1].push(255);
+          } else {
+            let target = this.outputData[i]*this.brightness;
+            this.updates[this.updates.length -1].push(target);
+          }
+        }
+        break;
       case 'undo':
         if (this.updates.length > 1) {
           this.undo = true;
@@ -145,6 +157,10 @@ function GraphImage(scene, inputContext, outputContext) {
         console.log('Unrecognized operation.');
         break;
     }
+  }
+
+  this.setBrightness = function(brightness) {
+    this.brightness = brightness;
   }
 
   this.setThreshold = function(threshold) {
