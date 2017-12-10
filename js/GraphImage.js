@@ -145,6 +145,15 @@ function GraphImage(scene, inputContext, outputContext) {
           this.animLength = 0;
         }
         break;
+      case 'reset':
+        if (this.updates.length > 1) {
+          this.updates = [this.updates[0], this.updates[this.updates.length -1]];
+          this.undo = true;
+        } else {
+          console.log('no');
+          this.animLength = 0;
+        }
+        break;
       case 'kmeans':
         this.animLength = 0;
         let updateDiv = document.getElementById('opUpdates');
