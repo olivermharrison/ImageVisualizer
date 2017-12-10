@@ -17,10 +17,13 @@ function GraphImage(scene, inputContext, outputContext) {
   this.updates = [];
   this.undo = false;
 
+  // animation vars
   this.animLength = 0;
   this.count = 0;
 
-  this.threshold = 128;
+  // oepration vars
+  this.numCentroids = 10;  // k means operation
+  this.threshold = 128;   // threshold opertation
 
   this.setInputFile = function(file) {
     let self = this;
@@ -129,6 +132,10 @@ function GraphImage(scene, inputContext, outputContext) {
           this.animLength = 0;
         }
         break;
+      case 'kmeans':
+        this.animLength = 0;
+        this.runKMeans();
+        break;
       default:
         console.log('Unrecognized operation.');
         break;
@@ -137,6 +144,9 @@ function GraphImage(scene, inputContext, outputContext) {
 
   this.setThreshold = function(threshold) {
     this.threshold = threshold;
+  }
+  this.setNumCentroids = function(k) {
+    this.numCentroids = k;
   }
 
   this.update = function() {
@@ -184,8 +194,81 @@ function GraphImage(scene, inputContext, outputContext) {
             this.undo = false;
             this.updates.pop();
           }
-          console.log('done');
         }
+    }
+  }
+
+  this.runKMeans = function() {
+    let self = this;
+
+    let converged = false;
+    let iteration = 1;
+    let pixelCentroids = []; // stores the index of the centroid that each pixel is assigned to
+
+    // 1) initialize k centroids randomly 
+    let centroids = [];
+    for (let i=0; i<this.numCentroids; ++i) {
+      centroids.push(new THREE.Vector3(Math.random()*255, Math.random()*255, Math.random()*255));
+    }
+
+    console.log('Running KMeans with k=' + this.numCentroids);
+    while (!converged) {
+      console.log('kmeans iteration ', iteration);
+
+      // 1) assign pixels to their nearest centroids
+      for (let i=0; i<this.outputData.length; i+=4) { // for each pixel
+        let minDistance = 1000000;
+        let c = 0;
+        pixelCentroids[i/4] = 0;
+        centroids.forEach(function(centroid){    // for each centroid
+          let distance = Math.sqrt(Math.pow(self.outputData[i] - centroid.x, 2) + Math.pow(self.outputData[i+1] - centroid.y, 2) + Math.pow(self.outputData[i+2] - centroid.z, 2));
+          if (distance < minDistance) {
+            pixelCentroids[i/4] = c;
+            minDistance = distance;
+          }
+          c++;
+        });
+      }
+
+      // 2) Recalculate centroids
+      let centroidsCopy = [];
+      // reset centroids
+      for (let k=0; k<this.numCentroids; ++k) {
+        centroidsCopy.push({value: centroids[k], count: 0});
+        centroids[k] = new THREE.Vector3(0, 0, 0);
+      }
+      
+      // sum pixels nearest to centroid
+      for (let i=0; i<this.outputData.length; i+=4) { // for each pixel
+        centroids[pixelCentroids[i/4]].x += self.outputData[i];
+        centroids[pixelCentroids[i/4]].y += self.outputData[i+1];
+        centroids[pixelCentroids[i/4]].z += self.outputData[i+2];
+        centroidsCopy[pixelCentroids[i/4]].count++;
+      }
+
+      // find average
+      converged = true;
+      for (let k=0; k<this.numCentroids; ++k) {
+        if (centroidsCopy[k].count > 0) {
+          centroids[k].divideScalar(centroidsCopy[k].count);
+        }
+        if (centroids[k].distanceTo(centroidsCopy[k].value) > 0) {
+          converged = false;
+        }
+      }
+
+      iteration++;
+    }
+    console.log("K Means has converged!");
+
+    this.count = 0;
+    this.animLength = 50;
+    this.updates.push([]);
+    for (var i=0; i<this.outputData.length; i+=4) {
+      this.updates[this.updates.length -1].push(centroids[pixelCentroids[i/4]].x);
+      this.updates[this.updates.length -1].push(centroids[pixelCentroids[i/4]].y);
+      this.updates[this.updates.length -1].push(centroids[pixelCentroids[i/4]].z);
+      this.updates[this.updates.length -1].push(255);
     }
   }
 }

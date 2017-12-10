@@ -43,7 +43,7 @@
           <div class="operations">
             <div>
               <input type="range" min="1" max="20" id="quantizeSlider">
-              <button id="quantizeButton">Quantize:10</button>
+              <button onclick="graph.applyOperation('kmeans')" id="quantizeButton">Quantize:10</button>
             </div>
             <div>
               <button onclick="graph.applyOperation('invert')">Invert</button>

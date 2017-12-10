@@ -42,6 +42,7 @@ document.getElementById('thresholdSlider').oninput = function(e) {
 }
 document.getElementById('quantizeSlider').oninput = function(e) {
   document.getElementById('quantizeButton').innerText = 'quantize:' + this.value;
+  graph.setNumCentroids(this.value);
 }
 
 document.getElementById('inputFiles').addEventListener('change', function(){
