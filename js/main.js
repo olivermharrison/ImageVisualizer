@@ -33,7 +33,7 @@ var outputContext = outputCanvas.getContext('2d');
 var inputCanvas = document.getElementById('inputCanvas');
 var inputContext = inputCanvas.getContext('2d');
 let graph = new GraphImage(scene, inputContext,outputContext);
-graph.setInputFile('Lenna.png');
+graph.setInputFile('color.jpg');
 
 document.getElementById('brightnessSlider').oninput = function(e) {
   document.getElementById('brightnessButton').innerText = 'brightness:' +  Math.floor(100*this.value) + "%";
@@ -76,7 +76,7 @@ function uploadImage(){
   }
 
   reader.onloadend = function () {
-    console.log(reader);  
+    document.getElementById('inputFiles').children[0].selected = true
     graph.setInputFile(reader.result);
   } 
 }
