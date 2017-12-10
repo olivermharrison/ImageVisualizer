@@ -36,7 +36,7 @@ let graph = new GraphImage(scene, inputContext,outputContext);
 graph.setInputFile('Lenna.png');
 
 document.getElementById('brightnessSlider').oninput = function(e) {
-  document.getElementById('brightnessButton').innerText = 'brightness:' + parseFloat(this.value).toFixed(1);
+  document.getElementById('brightnessButton').innerText = 'brightness:' +  Math.floor(100*this.value) + "%";
   graph.setBrightness(this.value);
 }
 document.getElementById('thresholdSlider').oninput = function(e) {
