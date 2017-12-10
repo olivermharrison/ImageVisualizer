@@ -84,6 +84,7 @@ function GraphImage(scene, inputContext, outputContext) {
   }
 
   this.applyOperation = function(operation) {
+    let self = this;
     if (this.animLength > 0) {
       console.log("still animating.");
       return;
@@ -134,7 +135,11 @@ function GraphImage(scene, inputContext, outputContext) {
         break;
       case 'kmeans':
         this.animLength = 0;
-        this.runKMeans();
+        let updateDiv = document.getElementById('opUpdates');
+        updateDiv.innerText = "Running K Means with k=" + this.numCentroids + "...";
+        setTimeout(function(){
+          self.runKMeans();
+        }, 100);
         break;
       default:
         console.log('Unrecognized operation.');
@@ -210,11 +215,9 @@ function GraphImage(scene, inputContext, outputContext) {
     for (let i=0; i<this.numCentroids; ++i) {
       centroids.push(new THREE.Vector3(Math.random()*255, Math.random()*255, Math.random()*255));
     }
-
-    console.log('Running KMeans with k=' + this.numCentroids);
+    
+    console.log('Running K Means with k=' + this.numCentroids);
     while (!converged) {
-      console.log('kmeans iteration ', iteration);
-
       // 1) assign pixels to their nearest centroids
       for (let i=0; i<this.outputData.length; i+=4) { // for each pixel
         let minDistance = 1000000;
@@ -259,8 +262,15 @@ function GraphImage(scene, inputContext, outputContext) {
 
       iteration++;
     }
-    console.log("K Means has converged!");
 
+    console.log("K Means has converged after " + iteration + " iterations.");
+    let updateDiv = document.getElementById('opUpdates');
+    updateDiv.innerText = "K Means has converged after " + iteration + " iterations.";
+    setTimeout(function(){
+      updateDiv.innerText = "";
+    }, 3000);
+
+    // setup the animation
     this.count = 0;
     this.animLength = 50;
     this.updates.push([]);

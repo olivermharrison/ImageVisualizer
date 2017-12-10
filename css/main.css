@@ -104,6 +104,15 @@ border: 2px solid rgba(0, 182, 255, 0.71);
   transform: translateY(3px);
 }
 
+#opUpdates {
+  position: absolute;
+  left: 0;
+  right: 0;
+  margin: auto;
+  width: 100%;
+  bottom: 8em;
+}
+
 
 /* upload file button */
 .fileContainer {

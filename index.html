@@ -35,12 +35,16 @@
             </select>
           </div>
 
+          
+
           <div class="output">
             <h2>Output</h2><br />
             <canvas id="outputCanvas" width="250" height="250  "></canvas>
           </div>
 
           <div class="operations">
+            <div id="opUpdates"></div>
+            
             <div>
               <input type="range" min="1" max="20" id="quantizeSlider">
               <button onclick="graph.applyOperation('kmeans')" id="quantizeButton">Quantize:10</button>
