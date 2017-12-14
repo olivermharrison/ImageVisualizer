@@ -133,6 +133,7 @@ function GraphImage(scene, inputContext, outputContext) {
             this.updates[this.updates.length -1].push(255);
           } else {
             let target = this.outputData[i]*this.brightness;
+            if (target > 255) target = 255;
             this.updates[this.updates.length -1].push(target);
           }
         }
