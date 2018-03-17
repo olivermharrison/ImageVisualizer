@@ -59,7 +59,7 @@ function GraphImage(scene, inputContext, outputContext) {
       }
 
       let geometry = new THREE.Geometry();
-      let sprite = new THREE.TextureLoader().load( "circle.png" );
+      let sprite = new THREE.TextureLoader().load( "img/circle.png" );
       sprite.anisotropy = 0;
       sprite.magFilter = THREE.NearestFilter;
       sprite.minFilter = THREE.NearestFilter;
@@ -246,7 +246,7 @@ function GraphImage(scene, inputContext, outputContext) {
     let spheres = [];
     centroids.forEach(function(centroid){
       let geometry = new THREE.Geometry();
-      let sprite = new THREE.TextureLoader().load( "circle.png" );
+      let sprite = new THREE.TextureLoader().load( "img/circle.png" );
       sprite.anisotropy = 0;
       sprite.magFilter = THREE.NearestFilter;
       sprite.minFilter = THREE.NearestFilter;

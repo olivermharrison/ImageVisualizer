@@ -33,7 +33,7 @@ var outputContext = outputCanvas.getContext('2d');
 var inputCanvas = document.getElementById('inputCanvas');
 var inputContext = inputCanvas.getContext('2d');
 let graph = new GraphImage(scene, inputContext,outputContext);
-graph.setInputFile('color.jpg');
+graph.setInputFile('img/examples/color.jpg');
 
 document.getElementById('brightnessSlider').oninput = function(e) {
   document.getElementById('brightnessButton').innerText = 'brightness:' +  Math.floor(100*this.value) + "%";
@@ -49,8 +49,8 @@ document.getElementById('quantizeSlider').oninput = function(e) {
 }
 
 document.getElementById('inputFiles').addEventListener('change', function(){
-  console.log(this.value);
-  graph.setInputFile(this.value);
+  const prefix = 'img/examples/';
+  graph.setInputFile(prefix + this.value);
 });
 
 var stats = new Stats();
